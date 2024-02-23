@@ -28,6 +28,11 @@ export function UserForm({ initialUser, isMerge }: Props) {
     setFormattedDate(formattedDate);
   }, [initialUser]);
 
+  const formatDate = (dateString) => {
+    const formattedDate = format(new Date(dateString), "dd/MM/yyyy");
+    return formattedDate;
+  };
+  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setUserDTO({

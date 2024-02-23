@@ -1,6 +1,14 @@
 const SearchFieldsCheckbox = ({
   selectedFields,
   handleFieldCheckboxChange,
+}: {
+  selectedFields: {
+    name: boolean;
+    document: boolean;
+    email: boolean;
+    phone: boolean;
+  };
+  handleFieldCheckboxChange: (field: string) => void;
 }) => {
   return (
     <div className="text-sm flex gap-3">

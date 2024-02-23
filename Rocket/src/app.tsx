@@ -1,6 +1,6 @@
 import { Button } from "./components/ui/button";
 import { Control, Input } from "./components/ui/input";
-import { Plus, Search, FileDown, X } from "lucide-react";
+import { Plus, Search,  X } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -22,6 +22,7 @@ import { ToastComponent } from "./components/ui/toast";
 import ExportToExcel from "./components/util/exportexcel";
 import SearchFieldsCheckbox from "./components/ui/searchfields";
 import { format } from "date-fns";
+import Pagination from "./components/ui/pagination";
 
 export function App() {
   //const [filter, setFilter] = useState('');
@@ -44,6 +45,7 @@ export function App() {
     email: false,
     phone: false,
   });
+  const [totalPages, setTotalPages] = useState(1);
 
   const handleRowClick = (user: UserDTORequest) => {
     setOpen(true);
@@ -62,7 +64,9 @@ export function App() {
           return false;
         });
       });
-      setFilteredUsers(filtered);
+      const firstTenUsers = filtered.slice(0, 10);
+      setFilteredUsers(firstTenUsers);
+      setTotalPages(Math.ceil(filtered.length / 10));
     }
   }, [searchTerm, users, selectedFields]);
 
@@ -271,8 +275,7 @@ export function App() {
             })}
           </TableBody>
         </Table>
-
-        {/* <Pagination items={20} page={1} pages={2} /> */}
+        <Pagination totalPages={totalPages} currentPage={1} />
       </main>
     </>
   );
