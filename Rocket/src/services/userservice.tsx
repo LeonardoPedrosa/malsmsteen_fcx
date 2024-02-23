@@ -1,4 +1,8 @@
-import { LoginRequest, ResetPasswordRequest, UserDTORequest } from "../entities";
+import {
+  LoginRequest,
+  ResetPasswordRequest,
+  UserDTORequest,
+} from "../entities";
 
 export class UserService {
   public async CreateUser(user: UserDTORequest): Promise<Response> {
@@ -86,37 +90,64 @@ export class UserService {
     }
   }
 
-  public async Login(loginRequest: LoginRequest) : Promise<Response> {
+  public async Login(loginRequest: LoginRequest): Promise<Response> {
     try {
-        const response = await fetch("https://localhost:7278/api/login", {
+      const response = await fetch("https://localhost:7278/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(loginRequest),
+      });
+
+      return response;
+    } catch (error) {
+      console.error("Erro ao criar usuário:", error);
+      throw error; // Lança novamente o erro para que ele possa ser tratado pelo chamador da função
+    }
+  }
+
+  public async ResetPasswordAsync(
+    resetPasswordRequest: ResetPasswordRequest
+  ): Promise<Response> {
+    try {
+      const response = await fetch(
+        "https://localhost:7278/api/login/resetpassword",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(resetPasswordRequest),
+        }
+      );
+
+      return response;
+    } catch (error) {
+      console.error("Erro ao criar usuário:", error);
+      throw error; // Lança novamente o erro para que ele possa ser tratado pelo chamador da função
+    }
+  }
+
+  public async UpdatePasswordAsync(
+    loginRequest: LoginRequest
+  ): Promise<Response> {
+    try {
+      const response = await fetch(
+        "https://localhost:7278/api/login/updatepassword",
+        {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(loginRequest),
-        });
-  
-        return response;
-      } catch (error) {
-        console.error("Erro ao criar usuário:", error);
-        throw error; // Lança novamente o erro para que ele possa ser tratado pelo chamador da função
-      }
-    }
-
-    public async ResetPasswordAsync(resetPasswordRequest: ResetPasswordRequest) : Promise<Response> {
-        try {
-          const response = await fetch("https://localhost:7278/api/login/resetpassword", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(resetPasswordRequest),
-          });
-
-          return response;
-        } catch (error) {
-          console.error("Erro ao criar usuário:", error);
-          throw error; // Lança novamente o erro para que ele possa ser tratado pelo chamador da função
         }
+      );
+      return response;
+    } catch (error) {
+      console.error("Erro ao criar usuário:", error);
+      throw error; 
     }
+  }
+
 }

@@ -17,11 +17,15 @@ export function UserForm({ initialUser, isMerge }: Props) {
   const [status, setStatus] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [openToast, setOpenToast] = React.useState(false);
+  const [formattedDate, setFormattedDate] = useState("");
 
   useEffect(() => {
     if (initialUser) {
       setUserDTO(initialUser);
     }
+    const receivedDate = initialUser?.dateBirth;
+    const formattedDate = receivedDate ? receivedDate.split("T")[0] : "";
+    setFormattedDate(formattedDate);
   }, [initialUser]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,6 +34,7 @@ export function UserForm({ initialUser, isMerge }: Props) {
       ...userDTO,
       [name]: value,
     });
+    setFormattedDate(e.target.value);
   };
 
   async function createUser(e: React.FormEvent<HTMLFormElement>) {
@@ -112,6 +117,19 @@ export function UserForm({ initialUser, isMerge }: Props) {
           />
         </div>
         <div className="space-y-1">
+          <label className="text-sm font-medium block" htmlFor="phone">
+            Telefone
+          </label>
+          <input
+            value={userDTO?.phone}
+            onChange={handleChange}
+            type="text"
+            id="phone"
+            name="phone"
+            className="rounded-lg px-3 py-2 bg-red-300/50 w-full"
+          />
+        </div>
+        <div className="space-y-1">
           <label className="text-sm font-medium block" htmlFor="motherName">
             Nome da mãe
           </label>
@@ -129,7 +147,7 @@ export function UserForm({ initialUser, isMerge }: Props) {
             Data de Nascimento
           </label>
           <input
-            value={userDTO?.dateBirth}
+            value={formattedDate}
             onChange={handleChange}
             type="date"
             id="dateBirth"
@@ -138,29 +156,25 @@ export function UserForm({ initialUser, isMerge }: Props) {
           />
         </div>
 
-        {/* <div className="space-y-1">
-          <label className="text-sm font-medium" htmlFor="status">
-            Status
-          </label>
-          <input type="checkbox" id="status" name="status" checked={true} />
-        </div> */}
-
         <div className="flex items-center justify-between">
           <div>
             {isMerge && (
-              <Button className="text-left" onClick={ActiveDesactiveUser}>
+              <Button
+                className="text-left cursor-pointer"
+                onClick={ActiveDesactiveUser}
+              >
                 {userDTO?.status ? "Desativar" : "Ativar"}
               </Button>
             )}
           </div>
           <div className="flex items-center justify-end gap-2">
             <Dialog.Close asChild>
-              <Button className="bg-white text-red-900">
+              <Button className="bg-white text-red-900 cursor-pointer">
                 <X className="size-3" />
                 Cancel
               </Button>
             </Dialog.Close>
-            <Button type="submit">
+            <Button type="submit" className="cursor-pointer">
               <Check className="size-3" />
               Save
             </Button>

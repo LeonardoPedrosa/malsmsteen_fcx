@@ -16,25 +16,24 @@ export function Login({ onLogin }): Props {
     userName: "",
     password: "",
   });
-  const [resetRecoverPassword, setResetRecoverPassword] = useState<ResetPasswordRequest>({
-    login: "",
-    motherName: "",
-    document: "",
-  });
+  const [resetRecoverPassword, setResetRecoverPassword] =
+    useState<ResetPasswordRequest>({
+      login: "",
+      motherName: "",
+      document: "",
+    });
   const userService = new UserService();
   const [openToast, setOpenToast] = React.useState(false);
   const [openRecoverPassword, setOpenRecoverPassword] = React.useState(false);
+  const [openNewPassword, setOpenNewPassword] = React.useState(false);
 
   const loginUser = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (
-      loginRequest?.userName === undefined ||
-      loginRequest?.password === undefined
-    ) {
+    if (loginRequest?.userName === "" || loginRequest?.password === "") {
       setOpenToast(true);
     }
 
-    const response = await userService.Login(loginRequest);
+    const response = await userService.UpdatePasswordAsync(loginRequest);
     if (response.ok) {
       handleLogin(loginRequest);
       onLogin(true);
@@ -53,22 +52,48 @@ export function Login({ onLogin }): Props {
     e.preventDefault();
     console.log(resetRecoverPassword);
     if (
-      resetRecoverPassword?.login === undefined ||
-      resetRecoverPassword?.motherName === undefined ||
-      resetRecoverPassword?.document === undefined
+      resetRecoverPassword?.login === "" ||
+      resetRecoverPassword?.motherName === "" ||
+      resetRecoverPassword?.document === ""
     ) {
       setOpenToast(true);
     }
     const response = await userService.ResetPasswordAsync(resetRecoverPassword);
     if (response.ok) {
+      setOpenNewPassword(true);
+      return;
+    }
+  };
+
+  const saveNewPassword = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (loginRequest?.userName === "" || loginRequest?.password === "") {
+      setOpenToast(true);
+    }
+    const response = await userService.UpdatePasswordAsync(loginRequest);
+    if (response.ok) {
+      handleLogin(loginRequest);
       onLogin(true);
       return;
     }
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log(loginRequest);
+    const { name, value } = e.target;
+    setResetRecoverPassword({
+      ...resetRecoverPassword,
+      [name]: value,
+    });
+    setLoginRequest({
+      ...loginRequest,
+      userName: value,
+    });
+  };
+
   return (
     <>
-      {!openRecoverPassword && (
+      {!openRecoverPassword && !openNewPassword && (
         <form onSubmit={loginUser} className="w-full space-y-3 mt-10">
           <div className="block w-full max-w-sm mx-auto bg-white rounded-xl shadow-md space-y-2 p-6">
             <div>
@@ -122,7 +147,7 @@ export function Login({ onLogin }): Props {
         </form>
       )}
 
-      {openRecoverPassword && (
+      {openRecoverPassword && !openNewPassword && (
         <form
           onSubmit={sendRequestRecoverPassword}
           className="w-full space-y-3 mt-10"
@@ -134,12 +159,7 @@ export function Login({ onLogin }): Props {
               </label>
               <input
                 value={resetRecoverPassword?.login}
-                onChange={(e) =>
-                  setResetRecoverPassword({
-                    ...resetRecoverPassword,
-                    login: e.target.value as string,
-                  })
-                }
+                onChange={handleInputChange}
                 type="text"
                 id="login"
                 name="login"
@@ -179,6 +199,37 @@ export function Login({ onLogin }): Props {
                 type="text"
                 id="motherName"
                 name="motherName"
+                className="rounded-lg px-3 py-2 bg-red-300/50 w-full"
+              />
+            </div>
+            <Button
+              className="w-max block cursor-pointer text-right"
+              type="submit"
+            >
+              Enviar
+            </Button>
+          </div>
+        </form>
+      )}
+
+      {openNewPassword && (
+        <form onSubmit={saveNewPassword} className="w-full space-y-3 mt-10">
+          <div className="block w-full max-w-sm mx-auto bg-white rounded-xl shadow-md space-y-2 p-6">
+            <div>
+              <label className="text-sm font-medium block" htmlFor="password">
+                Nova senha
+              </label>
+              <input
+                value={loginRequest?.password}
+                onChange={(e) =>
+                  setLoginRequest({
+                    ...loginRequest,
+                    password: e.target.value as string,
+                  })
+                }
+                type="password"
+                id="password"
+                name="password"
                 className="rounded-lg px-3 py-2 bg-red-300/50 w-full"
               />
             </div>

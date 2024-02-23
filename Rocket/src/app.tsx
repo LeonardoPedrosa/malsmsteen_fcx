@@ -19,6 +19,9 @@ import { useEffect, useState } from "react";
 import React from "react";
 import { UserService } from "./services/userservice";
 import { ToastComponent } from "./components/ui/toast";
+import ExportToExcel from "./components/util/exportexcel";
+import SearchFieldsCheckbox from "./components/ui/searchfields";
+import { format } from "date-fns";
 
 export function App() {
   //const [filter, setFilter] = useState('');
@@ -33,6 +36,14 @@ export function App() {
   const [description, setDescription] = useState<string>("");
   const [openToast, setOpenToast] = React.useState(false);
   const [isMerge, setIsMerge] = useState(false);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [filteredUsers, setFilteredUsers] = useState(users);
+  const [selectedFields, setSelectedFields] = useState({
+    name: true,
+    document: false,
+    email: false,
+    phone: false,
+  });
 
   const handleRowClick = (user: UserDTORequest) => {
     setOpen(true);
@@ -40,8 +51,20 @@ export function App() {
   };
 
   useEffect(() => {
-    console.log("selectedUsers atualizado:", selectedUsers);
-  }, [selectedUsers]);
+    if (users) {
+      const filtered = users.filter((user: UserDTO) => {
+        return Object.entries(selectedFields).some(([field, isSelected]) => {
+          if (isSelected && user[field as keyof UserDTO]) {
+            return user[field as keyof UserDTO]
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase());
+          }
+          return false;
+        });
+      });
+      setFilteredUsers(filtered);
+    }
+  }, [searchTerm, users, selectedFields]);
 
   const { isLoading } = useQuery<UserDTO[]>({
     queryKey: ["get-users"],
@@ -87,6 +110,18 @@ export function App() {
     }
   };
 
+  const handleFieldCheckboxChange = (field: string) => {
+    setSelectedFields((prevFields) => ({
+      ...prevFields,
+      [field]: !prevFields[field],
+    }));
+  };
+
+  const formatDate = (dateString) => {
+    const formattedDate = format(new Date(dateString), "dd/MM/yyyy");
+    return formattedDate;
+  };
+
   return (
     <>
       <ToastComponent
@@ -95,7 +130,7 @@ export function App() {
         status={status}
         description={description}
       />
-      
+
       <main className="py-10 max-w-6xl mx-auto space-y-5 mb-8">
         <div className="flex justify-between">
           <div className="flex items-center gap-3">
@@ -103,6 +138,7 @@ export function App() {
             <Dialog.Root open={open} onOpenChange={setOpen}>
               <Dialog.Trigger asChild>
                 <Button
+                  className="cursor-pointer"
                   variant="primary"
                   onClick={() => {
                     setIsMerge(false);
@@ -141,24 +177,33 @@ export function App() {
               </Dialog.Portal>
             </Dialog.Root>
           </div>
-          <div className="text-right">
-            <Button>
-              <FileDown className="size-3" />
-              Exportar
-            </Button>
+          <div className="text-right cursor-pointer">
+            <ExportToExcel data={users} />
           </div>
         </div>
 
         <div className="flex justify-between">
           <Button
+            className="cursor-pointer"
             onClick={removeAllSelected}
             disabled={selectedUsers.length === 0}
           >
             Remover usuarios
           </Button>
+
+          <SearchFieldsCheckbox
+            selectedFields={selectedFields}
+            handleFieldCheckboxChange={handleFieldCheckboxChange}
+          />
+
           <Input variant="filter">
             <Search className="size-3" />
-            <Control placeholder="Search" />
+            <Control
+              type="text"
+              placeholder="Buscar"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </Input>
         </div>
 
@@ -177,7 +222,7 @@ export function App() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users?.map((user) => {
+            {filteredUsers?.map((user) => {
               return (
                 <TableRow
                   key={user?.id}
@@ -191,6 +236,7 @@ export function App() {
                 >
                   <TableCell>
                     <input
+                      style={{ all: "revert" }}
                       type="checkbox"
                       id={`checkbox-${user?.id}`}
                       onChange={() => handleCheckboxChange(user.id)}
@@ -207,9 +253,9 @@ export function App() {
                   <TableCell>
                     {user?.status ? "Ativado" : "Desativado"}
                   </TableCell>
-                  <TableCell>{user?.dateBirth}</TableCell>
+                  <TableCell>{formatDate(user?.dateBirth)}</TableCell>
                   <TableCell>{user?.generation}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right cursor-pointer">
                     <Button
                       size="icon"
                       onClick={(e) => {
